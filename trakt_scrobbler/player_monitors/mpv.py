@@ -174,7 +174,7 @@ class MPVMon(Monitor):
     def on_line(self, line: bytes):
         try:
             mpv_json = json.loads(line)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, UnicodeDecodeError):
             logger.warning('Invalid JSON received. Skipping.', exc_info=True)
             logger.debug(line)
             return
