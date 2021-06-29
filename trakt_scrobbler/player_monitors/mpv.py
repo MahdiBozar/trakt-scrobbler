@@ -295,15 +295,22 @@ class MPVWinMon(MPVMon):
                 raise
 
     def conn_loop(self):
-        self.file_handle = win32file.CreateFile(
-            self.ipc_path,
-            win32file.GENERIC_READ | win32file.GENERIC_WRITE,
-            0,
-            None,
-            win32file.OPEN_EXISTING,
-            win32file.FILE_FLAG_OVERLAPPED,
-            None
-        )
+        try:
+            self.file_handle = win32file.CreateFile(
+                self.ipc_path,
+                win32file.GENERIC_READ | win32file.GENERIC_WRITE,
+                0,
+                None,
+                win32file.OPEN_EXISTING,
+                win32file.FILE_FLAG_OVERLAPPED,
+                None
+            )
+        except win32file.error as e:
+            if e.args[0] == ERROR_PIPE_BUSY:
+                logger.warning("Could not connect to pipe!")
+                return  # ignore for now
+            else:
+                raise
 
         # needed for blocking on read
         overlapped = win32file.OVERLAPPED()
