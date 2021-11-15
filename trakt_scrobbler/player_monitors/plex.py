@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 import confuse
 from trakt_scrobbler import logger
 from trakt_scrobbler.app_dirs import DATA_DIR
@@ -71,7 +72,12 @@ class PlexMon(WebInterfaceMon):
         resp = self.sess.get(url)
         # TODO: If we get a 401, clear token and restart plex auth flow
         resp.raise_for_status()
-        data = resp.json()["MediaContainer"]
+        try:
+            data = resp.json()["MediaContainer"]
+        except JSONDecodeError:
+            logger.exception("Error with decoding")
+            logger.debug(resp.text)
+            return None
 
         if data["size"] <= 0:
             return None
